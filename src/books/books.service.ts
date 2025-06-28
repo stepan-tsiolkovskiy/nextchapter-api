@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateBookDto, UpdateBookDto } from './dto/book.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '../../generated/prisma/index.js';
 
 @Injectable()
 export class BooksService {
@@ -8,7 +9,10 @@ export class BooksService {
 
   async create(createBookDto: CreateBookDto) {
     return this.prisma.book.create({
-      data: createBookDto,
+      data: {
+        ...createBookDto,
+        price: new Prisma.Decimal(createBookDto.price),
+      },
     });
   }
 

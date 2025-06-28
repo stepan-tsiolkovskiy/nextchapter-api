@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "books-api": {
+      "command": "node",
+      "args": ["../mcp-books-server/dist/index.js"]
+    }
+  }
+}

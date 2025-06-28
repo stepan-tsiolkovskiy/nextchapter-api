@@ -1,6 +1,4 @@
-import { IsString, IsNotEmpty, IsDecimal, IsOptional } from 'class-validator';
-import { Transform } from 'class-transformer';
-import { Decimal } from '@prisma/client/runtime/library';
+import { IsString, IsNotEmpty, IsOptional, IsNumber, Min } from 'class-validator';
 
 export class CreateBookDto {
   @IsString()
@@ -11,9 +9,9 @@ export class CreateBookDto {
   @IsNotEmpty()
   author: string;
 
-  @Transform(({ value }) => new Decimal(value))
-  @IsDecimal()
-  price: Decimal;
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  price: number;
 }
 
 export class UpdateBookDto {
@@ -25,8 +23,8 @@ export class UpdateBookDto {
   @IsOptional()
   author?: string;
 
-  @Transform(({ value }) => value ? new Decimal(value) : undefined)
-  @IsDecimal()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
   @IsOptional()
-  price?: Decimal;
+  price?: number;
 }
