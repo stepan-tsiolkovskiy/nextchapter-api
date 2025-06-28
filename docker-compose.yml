@@ -1,0 +1,66 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nextchapter-server
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      PORT: ${PORT}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: db
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    ports:
+      - '${PORT}:${PORT}'
+    volumes:
+      - .:/usr/src/app
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "
+      if [ \"$NODE_ENV\" = 'development' ]; then
+        npm install && npx prisma migrate deploy && npm run start:dev ;
+      else
+        npm run start;
+      fi
+      "
+
+  db:
+    image: postgres:15
+    container_name: postgres
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_INITDB_ARGS: '--auth-host=scram-sha-256 --auth-local=scram-sha-256'
+    ports:
+      - '${POSTGRES_PORT}:5432'
+    volumes:
+      - nextchapter_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: nextchapter-pgadmin
+    restart: always
+    depends_on:
+      - db
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@nextchapter.com
+      PGADMIN_DEFAULT_PASSWORD: nextchapter2024
+    ports:
+      - '5050:80'
+
+volumes:
+  nextchapter_pgdata:
